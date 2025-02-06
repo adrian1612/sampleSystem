@@ -1,0 +1,151 @@
+﻿@{
+    ViewData["Title"] = "Sample Page";
+}
+
+<h1>Sample Page</h1>
+
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#functionModal" data-bind="click: add">Create</button>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>First name</th>
+            <th>Middle name</th>
+            <th>Last name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: collection">
+        <tr>
+            <td data-bind="text: ID"></td>
+            <td data-bind="text: fname"></td>
+            <td data-bind="text: mn"></td>
+            <td data-bind="text: lname"></td>
+            <td>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#functionModal" data-bind="click: $root.edit">Edit</button>
+                <button class="btn btn-danger">Delete</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script type="text/html" id="create-template">
+    <div class="modal-header">
+        <h5 class="modal-title" id="createModalLabel">Create</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <form data-bind="submit: $root.create">
+            <div class="mb-3">
+                <label for="fname" class="form-label">First name</label>
+                <input type="text" class="form-control" id="fname" data-bind="value: fname">
+            </div>
+            <div class="mb-3">
+                <label for="mn" class="form-label">Middle name</label>
+                <input type="text" class="form-control" id="mn" data-bind="value: mn">
+            </div>
+            <div class="mb-3">
+                <label for="lname" class="form-label">Last name</label>
+                <input type="text" class="form-control" id="lname" data-bind="value: lname">
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/html" id="edit-template">
+    <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <form data-bind="submit: $root.update">
+            <div class="mb-3">
+                <label for="fname" class="form-label">First name</label>
+                <input type="text" class="form-control" id="fname" data-bind="value: fname">
+            </div>
+            <div class="mb-3">
+                <label for="mn" class="form-label">Middle name</label>
+                <input type="text" class="form-control" id="mn" data-bind="value: mn">
+            </div>
+            <div class="mb-3">
+                <label for="lname" class="form-label">Last name</label>
+                <input type="text" class="form-control" id="lname" data-bind="value: lname">
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</script>
+
+<div class="modal fade" id="functionModal">
+    <div class="modal-dialog">
+        <div class="modal-content" data-bind="template: { name: selectedTemplate, data: selectedData }">
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function SampleScheme(d) {
+            var self = this;
+            self.ID = d.id;
+            self.fname = d.fname;
+            self.mn = d.mn;
+            self.lname = d.lname;
+        }
+
+        function SampleModel() {
+            var self = this;
+            self.collection = ko.observableArray();
+            self.selectedData = ko.observable(new SampleScheme({}));
+            self.selectedTemplate = ko.observable('create-template');
+
+            self.add = () => {
+                self.selectedData(new SampleScheme({}));
+                self.selectedTemplate('create-template');
+            };
+
+            self.edit = (d) => {
+                self.selectedData(d);
+                self.selectedTemplate('edit-template');
+            };
+
+            self.create = () => {
+                $.post('@Url.Action("Create", "Sample", new { area = "" })', { m: self.selectedData() }, function () {
+                    self.init();
+                    $('#functionModal').modal('hide');
+                });
+            };
+
+            self.update = () => {
+                $.post('@Url.Action("Update", "Sample", new { area = "" })', { m: self.selectedData() }, function () {
+                    self.init();
+                    $('#functionModal').modal('hide');
+                });
+            };
+
+            self.init = function () {
+                $.ajax({
+                    url: '@Url.Action("List", "Sample", new { area = "" })',
+                    method: 'GET',
+                    success: function (res) {
+                        var mappedData = $.map(res, function (item) {
+                            return new SampleScheme(item);
+                        });
+                        self.collection(mappedData);
+                    }
+                });
+            };
+
+            self.init();
+        }
+
+        ko.applyBindings(new SampleModel());
+
+    </script>
+}
