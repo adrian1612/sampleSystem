@@ -21,10 +21,20 @@ public class SampleController : Controller
         mod.Create(m);
         return Json(new { message = "Success" });
     }
+    
+    public IActionResult Sample() {
+        return View();
+    }
 
     [HttpPost]
     public IActionResult Update(Sample m){
         mod.Update(m);
+        return Json(new { message = "Success" });
+    }
+
+    [HttpPost]
+    public IActionResult Delete(int id){
+        mod.Delete(id);
         return Json(new { message = "Success" });
     }
 

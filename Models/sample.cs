@@ -33,5 +33,9 @@ namespace sampleSystem.Models
                 lname = m.lname
             });
         }
+
+        public void Delete(int id) {
+            s.Query("DELETE FROM tbl_person WHERE ID = @ID", new { ID = id });
+        }
     }
 }
